@@ -6,9 +6,19 @@
 package model;
 
 /**
- *
- * @author 2dam
+ * Factoria de la interfaz Signable
+ * @author Markel Lopez de uralde
  */
 public class DaoSignableFactory {
-    
+
+    /**
+     * Recoge una instacia e implementa la interfaz
+     * @return interfaz
+     */
+
+    public static Signable getSignable() {
+        return new DaoSignableImplementation();
+
+    }
+
 }
