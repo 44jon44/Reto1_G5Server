@@ -6,6 +6,7 @@
  */
 package connection;
 
+import com.sun.jndi.ldap.pool.Pool;
 import exceptions.DatabaseNotAvaiableException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -19,6 +20,7 @@ import java.util.logging.Logger;
  * @author Ibai,jon,markel,alex
  */
 public class ConnectionPool {
+
     private static final Logger LOG = Logger.getLogger(ConnectionPool.class.getName());
     // fichero config.properties
     private ResourceBundle configFile;
@@ -26,6 +28,7 @@ public class ConnectionPool {
     private String urlBD;
     private String userBD;
     private String contraBD;
+
     /////
     private ConnectionPool pool;
     private Connection con;
@@ -35,6 +38,7 @@ public class ConnectionPool {
 
     /**
      * Metodo para hacer la conexion con la base de datos
+     *
      * @throws exceptions.DatabaseNotAvaiableException
      */
     public void makeConnection() throws DatabaseNotAvaiableException {
@@ -50,6 +54,7 @@ public class ConnectionPool {
             throw new DatabaseNotAvaiableException();
         }
     }
+
     /**
      * creamos la pila para almacenar las conexines
      *
@@ -60,6 +65,18 @@ public class ConnectionPool {
         //Creamos  un Stack donde se alcenaran las conexiones.
         poolStack = new Stack<>();
         this.makeConnection();
+    }
+/**
+ * 
+ * @return controla que solo haya un pool  ya que es una clase Singletoon
+ */
+    private synchronized ConnectionPool poolInstance() {
+        if (pool == null) {
+            pool = new ConnectionPool();
+            return pool;
+        } else {
+           return pool;
+        }
     }
 
     /**
@@ -75,7 +92,6 @@ public class ConnectionPool {
         }
         return conn;
     }
-
     /**
      * liberar una conexion cuando se deje de usar por parte del usuario
      *
