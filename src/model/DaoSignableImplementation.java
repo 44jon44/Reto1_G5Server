@@ -15,12 +15,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.logging.Logger;
 /**
  * Clase DAO que implementa la interfaz Signable
  * @author Alex Hurtado 
  */
 public class DaoSignableImplementation implements Signable {
 
+    private static final Logger LOG = Logger.getLogger(DaoSignableImplementation.class.getName()); 
     private static ConnectionPool pool;
     private Connection con;
     private PreparedStatement stmt;
