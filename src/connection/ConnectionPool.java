@@ -6,11 +6,9 @@
  */
 package connection;
 
-import com.sun.jndi.ldap.pool.Pool;
-import exceptions.DatabaseNotAvaiableException;
+import exceptions.DatabaseNotAvailableException;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
 import java.util.Stack;
@@ -25,43 +23,40 @@ public class ConnectionPool {
     // fichero config.properties
     private ResourceBundle configFile;
     private String driverBD;
-    private String urlBD;
-    private String userBD;
-    private String contraBD;
+    private String urlDB;
+    private String userDB;
+    private String passDB;
 
-    /////
-    private ConnectionPool pool;
-    private Connection con;
-    private PreparedStatement stmt;
+    private static ConnectionPool pool;
     // en este tipo
     private Stack<Connection> poolStack;
 
     /**
      * Metodo para hacer la conexion con la base de datos
      *
-     * @throws exceptions.DatabaseNotAvaiableException
+     * @throws exceptions.DatabaseNotAvailableException
      */
-    public void makeConnection() throws DatabaseNotAvaiableException {
-        this.configFile = ResourceBundle.getBundle("connection.BdConfig");
-        this.driverBD = configFile.getString("driver");
-        this.urlBD = configFile.getString("con");
-        this.userBD = configFile.getString("DBUSER");
-        this.contraBD = configFile.getString("DBPASS");
+    public void makeConnection() throws DatabaseNotAvailableException {
+        this.configFile = ResourceBundle.getBundle("model.config");
+        this.driverBD = configFile.getString("DRIVER");
+        this.urlDB = configFile.getString("DB_URL");
+        this.userDB = configFile.getString("DB_USER");
+        this.passDB = configFile.getString("DB_PASS");
         try {
-            Connection conn = null;
-            conn = DriverManager.getConnection(urlBD, userBD, contraBD);
+            Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
+            //push añadir una conexion a la pila 
+            poolStack.push(conn);
         } catch (SQLException e) {
-            throw new DatabaseNotAvaiableException();
+            throw new DatabaseNotAvailableException();
         }
     }
-
     /**
      * creamos la pila para almacenar las conexines
      *
-     * @throws SQLException
-     * @throws exceptions.DatabaseNotAvaiableException
+     * @throws SQLException lanza una excepcion 
+     * @throws exceptions.DatabaseNotAvailableException lanza una excepcion 
      */
-    public void createStackPool() throws SQLException, DatabaseNotAvaiableException {
+    public void createStackPool() throws SQLException, DatabaseNotAvailableException {
         //Creamos  un Stack donde se alcenaran las conexiones.
         poolStack = new Stack<>();
         this.makeConnection();
@@ -70,7 +65,7 @@ public class ConnectionPool {
  * 
  * @return controla que solo haya un pool  ya que es una clase Singletoon
  */
-    private synchronized ConnectionPool poolInstance() {
+    public static ConnectionPool poolInstance(){
         if (pool == null) {
             pool = new ConnectionPool();
             return pool;
@@ -78,7 +73,6 @@ public class ConnectionPool {
            return pool;
         }
     }
-
     /**
      * Se obtendra una conexion por parte del pool del Stack
      *
@@ -102,4 +96,5 @@ public class ConnectionPool {
         LOG.info("liberar una conexion ");
         poolStack.push(con);
     }
+    
 }
