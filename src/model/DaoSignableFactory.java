@@ -5,10 +5,16 @@
  */
 package model;
 
+import exceptions.DatabaseNotAvailableException;
+import java.sql.SQLException;
+
 /**
- *
- * @author 2dam
+ * factoria que accede a la DaoSignableImplementation
+ * @author alex y markel
+ * 
  */
 public class DaoSignableFactory {
-    
+       public static DaoSignableImplementation getDaoSignableImplementation() throws SQLException, DatabaseNotAvailableException{
+        return new DaoSignableImplementation();
+    }
 }
