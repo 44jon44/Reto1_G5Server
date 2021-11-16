@@ -37,7 +37,6 @@ public class DaoSignableImplementation implements Signable {
     //Constructor
     public DaoSignableImplementation() throws SQLException, DatabaseNotAvailableException {
         this.pool = ConnectionPool.poolInstance();
-        this.pool.createStackPool();
     }
 
     /**
@@ -48,9 +47,10 @@ public class DaoSignableImplementation implements Signable {
      * @throws exceptions.LoginNotFoundException 
      * @throws exceptions.PasswordNotFoundException 
      * @throws java.lang.InterruptedException 
+     * @throws exceptions.DatabaseNotAvailableException 
      */
     @Override
-    public User signIn(User user) throws SQLException, LoginNotFoundException, PasswordNotFoundException, InterruptedException {
+    public User signIn(User user) throws SQLException, LoginNotFoundException, PasswordNotFoundException, InterruptedException, DatabaseNotAvailableException {
         User login = new User();
         con = pool.getConnection();
         stmt = con.prepareStatement(SIGN_IN);
@@ -86,9 +86,10 @@ public class DaoSignableImplementation implements Signable {
      * @return Un booleano que indica si se ha dado de alta de forma correcta el usuario
      * @throws SQLException
      * @throws LoginExistException 
+     * @throws java.lang.InterruptedException 
      */
     @Override
-    public  boolean  signUp(User user) throws SQLException, LoginExistException, InterruptedException {
+    public  boolean  signUp(User user) throws SQLException, LoginExistException, InterruptedException, DatabaseNotAvailableException {
         int idGenerated = -1;
         ResultSet rsId;
         con = pool.getConnection();

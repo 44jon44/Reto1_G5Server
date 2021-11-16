@@ -26,8 +26,6 @@ public class ServerApplication {
     private static final Logger LOG = Logger.getLogger(ServerApplication.class.getName());
     public static final int SERVER_MAX_CONNECTIONS = Integer.valueOf(ResourceBundle.getBundle("model.config").getString("SERVER_MAX_CONN"));
     public static int currentConnections = 0;
-    private static boolean maxConnReached = false;
-
     /**
      * @param args the command line arguments
      */

@@ -21,80 +21,94 @@ public class ConnectionPool {
 
     private static final Logger LOG = Logger.getLogger(ConnectionPool.class.getName());
     // fichero config.properties
-    private ResourceBundle configFile;
-    private String driverBD;
-    private String urlDB;
-    private String userDB;
-    private String passDB;
-
+    private ResourceBundle configFile = ResourceBundle.getBundle("model.config");
+    private String urlDB = configFile.getString("DB_URL");
+    private String userDB = configFile.getString("DB_USER");
+    private String passDB = configFile.getString("DB_PASS");
+    private Connection conn;
     private static ConnectionPool pool;
     // en este tipo
-    private Stack<Connection> poolStack;
+    private static Stack<Connection> poolStack;
 
     /**
      * Metodo para hacer la conexion con la base de datos
      *
-     * @throws exceptions.DatabaseNotAvailableException
+     * @return Connection La nueva conexión creada
+     * @throws DatabaseNotAvailableException
      */
-    public void makeConnection() throws DatabaseNotAvailableException {
-        this.configFile = ResourceBundle.getBundle("model.config");
-        this.driverBD = configFile.getString("DRIVER");
-        this.urlDB = configFile.getString("DB_URL");
-        this.userDB = configFile.getString("DB_USER");
-        this.passDB = configFile.getString("DB_PASS");
-        try {
-            Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
-            //push añadir una conexion a la pila 
-            poolStack.push(conn);
-        } catch (SQLException e) {
+    public Connection makeConnection() throws DatabaseNotAvailableException {
+        LOG.info("Crear una conexión");
+        try
+        {
+            //creamos una neva conexión
+            conn = DriverManager.getConnection(urlDB, userDB, passDB);
+            //devolvemos la conexión creada
+            return conn;
+        } catch (SQLException e)
+        {
             throw new DatabaseNotAvailableException();
         }
     }
+
     /**
-     * creamos la pila para almacenar las conexines
+     * Creamos una pila (stack) para almacenar las conexines
      *
-     * @throws SQLException lanza una excepcion 
-     * @throws exceptions.DatabaseNotAvailableException lanza una excepcion 
+     * @throws SQLException lanza una excepcion
+     * @throws exceptions.DatabaseNotAvailableException lanza una excepcion
      */
-    public void createStackPool() throws SQLException, DatabaseNotAvailableException {
+    public static void createStackPool() throws SQLException, DatabaseNotAvailableException {
         //Creamos  un Stack donde se alcenaran las conexiones.
         poolStack = new Stack<>();
-        this.makeConnection();
     }
-/**
- * 
- * @return controla que solo haya un pool  ya que es una clase Singletoon
- */
-    public static ConnectionPool poolInstance(){
-        if (pool == null) {
-            pool = new ConnectionPool();
-            return pool;
-        } else {
-           return pool;
-        }
-    }
+
     /**
-     * Se obtendra una conexion por parte del pool del Stack
-     *
-     * @return retornamos una conexion que se ha añadido
-     * @throws InterruptedException
+     * Este método controla que solo haya una instancia de la clase ConnectionPool.
+     * Para ello utilizamos el patrón de diseño Singleton
+     * @return @throws java.sql.SQLException
+     * @throws exceptions.DatabaseNotAvailableException
      */
-    public Connection getConnection() throws InterruptedException {
-        Connection conn = null;
-        if (poolStack.size() > 0) {
-            conn = poolStack.pop();
+    public static ConnectionPool poolInstance() throws SQLException, DatabaseNotAvailableException {
+        LOG.info("Obtener instancia de ConnectionPool");
+        if (pool == null)
+        {
+            pool = new ConnectionPool();
+            createStackPool();
+            return pool;
+        } else
+        {
+            return pool;
         }
-        return conn;
     }
+
     /**
-     * liberar una conexion cuando se deje de usar por parte del usuario
+     * Método que devuelve una conexión desde el pool de conexiones.
+     *
+     * @return Connection
+     * @throws InterruptedException
+     * @throws exceptions.DatabaseNotAvailableException
+     */
+    public Connection getConnection() throws InterruptedException, DatabaseNotAvailableException {
+        LOG.info("Obtener una conexión");
+        if (poolStack.isEmpty())
+        {
+            //si la pila no contiene ninguna conexión creamos una
+            conn = makeConnection();
+            //guardamos la conexión creada en la pila
+            poolStack.push(conn);
+        }
+        //devolvemos una conexión desde la pila
+        return poolStack.pop();
+    }
+
+    /**
+     * Método que libera una conexión cuando se deje de usar por parte del usuario
      *
      * @param con Objeto conexion
      * @throws InterruptedException
      */
     public void releaseConnection(Connection con) throws InterruptedException {
-        LOG.info("liberar una conexion ");
+        LOG.info("Liberar una conexión");
         poolStack.push(con);
     }
-    
+
 }
